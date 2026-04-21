@@ -12,6 +12,11 @@ export type TxMeters = {
   // TXA per-stage peak readings from WdspDspEngine.ProcessTxBlock. Valid
   // during MOX/TUN only — idle frames carry −Infinity levels and 0 GR, so
   // consumers can detect "no live data" by checking isFinite().
+  // wdspMicPk is the post-panel-gain, pre-EQ level (txaMeterType MIC_PK=0),
+  // carried in the MicDbfs wire slot of TxMetersFrame. Kept separate from
+  // the worklet-driven micDbfs so the MicMeter's ~50 Hz animation is
+  // unaffected by the 10 Hz server frames.
+  wdspMicPk: number;
   eqPk: number;
   lvlrPk: number;
   alcPk: number;
@@ -45,17 +50,17 @@ export type TxState = {
   micGainDb: number;
   setMicGainDb: (db: number) => void;
   // Meter telemetry pushed from the server's TxMetersService over WS (0x11).
-  // Defaults look "quiet": 0 W forward/reflected, 1.0 SWR (matched), -100 dBfs
-  // mic (near silence) so the SMeter/dBfs readouts don't spike on first paint.
+  // Defaults look "quiet": 0 W forward/reflected, 1.0 SWR (matched).
   //
-  // micDbfs is client-driven: set by the mic-uplink worklet's per-block peak
-  // so the MicMeter animates even during RX. The server's TxMetersFrame no
-  // longer writes this field — its placeholder -100f would clobber the live
-  // capture. setMeters intentionally skips micDbfs.
+  // micDbfs is client-driven by the mic-uplink worklet so the MicMeter
+  // animates at ~50 Hz even during RX. wdspMicPk is server-driven from the
+  // TxMetersFrame MicDbfs slot (now carrying real WDSP MIC_PK data); kept
+  // separate to avoid overwriting the worklet animation at 10 Hz.
   fwdWatts: number;
   refWatts: number;
   swr: number;
   micDbfs: number;
+  wdspMicPk: number;
   eqPk: number;
   lvlrPk: number;
   alcPk: number;
@@ -94,6 +99,7 @@ export const useTxStore = create<TxState>()(
       refWatts: 0,
       swr: 1.0,
       micDbfs: -100,
+      wdspMicPk: -Infinity,
       eqPk: -Infinity,
       lvlrPk: -Infinity,
       alcPk: -Infinity,
@@ -103,6 +109,7 @@ export const useTxStore = create<TxState>()(
         fwdWatts: m.fwdWatts,
         refWatts: m.refWatts,
         swr: m.swr,
+        wdspMicPk: m.micDbfs,
         eqPk: m.eqPk,
         lvlrPk: m.lvlrPk,
         alcPk: m.alcPk,

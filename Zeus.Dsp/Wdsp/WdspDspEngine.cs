@@ -823,6 +823,7 @@ public sealed class WdspDspEngine : IDspEngine
         // ProcessTxBlock runs from the TX ingest thread and GetTxStageMeters
         // only from TxMetersService (10 Hz).
         var snap = new TxStageMeters(
+            MicPk: (float)micPk,
             EqPk: (float)eqPk,
             LvlrPk: (float)lvlrPk,
             AlcPk: (float)alcPk,
