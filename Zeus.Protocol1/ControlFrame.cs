@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Net;
 using Zeus.Protocol1.Discovery;
+using Zeus.Protocol1.Profiles;
 
 namespace Zeus.Protocol1;
 
@@ -83,10 +84,7 @@ internal static class ControlFrame
                 cc[2] = 0;
                 cc[3] = 0;
                 cc[4] = 0;
-                if (state.Board == HpsdrBoardKind.HermesLite2 && state.Mox)
-                {
-                    cc[2] |= 0x08;
-                }
+                BoardProfileFactory.Get(state.Board).ApplyMoxBits(cc, state.Mox);
                 break;
 
             case CcRegister.Attenuator:
@@ -103,15 +101,8 @@ internal static class ControlFrame
 
     private static void WriteAttenuatorPayload(Span<byte> c14, in CcState s)
     {
-        // Bare HPSDR (Hermes/Angelia/Orion/MkII): C4 = 0x20 | (Db & 0x1F).
-        // HL2: C4 = 0x40 | (60 - Db) — HL2 has no physical RX step attenuator,
-        // so the UI "attenuate by N dB" maps to "reduce firmware RX gain by N
-        // from its max of 60" (deskhpsdr old_protocol.c:2922-2941, and the
-        // HL2 gateware ad9866 rxgain register).
         int db = s.Atten.ClampedDb;
-        byte c4 = s.Board == HpsdrBoardKind.HermesLite2
-            ? (byte)(0x40 | Math.Clamp(60 - db, 0, 60))
-            : (byte)(0x20 | (db & 0x1F));
+        byte c4 = BoardProfileFactory.Get(s.Board).EncodeAttenuator(db);
 
         c14[0] = 0;   // C1 — reserved on this register
         c14[1] = 0;   // C2
@@ -125,14 +116,11 @@ internal static class ControlFrame
         byte c1 = (byte)((byte)s.Rate & 0x03);
         c14[0] = c1;
 
-        // C2: class-E PA at bit 0; OC pins (N2ADR filter board on HL2) at
-        // bits 1..7. deskhpsdr shifts the 7-bit pin mask left by 1 into the
-        // output buffer (old_protocol.c:2550). Class-E stays 0 for RX-only MVP.
+        // C2: class-E PA at bit 0; OC pins (filter board) at bits 1..7.
+        // deskhpsdr shifts the 7-bit pin mask left by 1 (old_protocol.c:2550).
+        // Class-E stays 0 for RX-only MVP.
         byte c2 = 0;
-        if (s.Board == HpsdrBoardKind.HermesLite2 && s.HasN2adr)
-        {
-            c2 |= (byte)(N2adrBands.RxOcMask(s.VfoAHz) << 1);
-        }
+        BoardProfileFactory.Get(s.Board).ApplyFilterPins(ref c2, s.VfoAHz, s.HasN2adr);
         c14[1] = c2;
 
         // C3: Atlas step attenuator [1:0], RAND [2], DITHER [3], preamp [4],
@@ -216,7 +204,7 @@ internal static class ControlFrame
         // Pre-conditions for writing a non-zero payload: MOX engaged, board is
         // HL2 (don't accidentally drive RF on other boards whose PA bits live
         // elsewhere), and an IQ source is plumbed through.
-        if (source is null || !state.Mox || state.Board != HpsdrBoardKind.HermesLite2)
+        if (source is null || !state.Mox || !BoardProfileFactory.Get(state.Board).SupportsTxIq)
         {
             // frame[8..] was cleared by BuildDataPacket; leave zero.
             return;
