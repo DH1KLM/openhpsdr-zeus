@@ -88,7 +88,20 @@ public sealed record StateDto(
     int AttOffsetDb = 0,
     // Red-lamp flag derived from Thetis' overload-level counter
     // (+2 per overload cycle, -1 per clean, clamped 0..5, warn when >3).
-    bool AdcOverloadWarning = false);
+    bool AdcOverloadWarning = false,
+    // Currently active filter preset slot name (e.g. "F6", "VAR1"). Null when
+    // the filter was set by a drag edit without a named slot context.
+    string? FilterPresetName = null,
+    // Advanced-filter ribbon visibility, persisted across server restarts via
+    // FilterPresetStore so the operator's close-the-ribbon choice sticks.
+    bool FilterAdvancedPaneOpen = false,
+    // TX bandpass filter (WDSP TXA SetTXABandpassFreqs). Signed per sideband
+    // like RX FilterLowHz/HighHz: USB positive, LSB negative, AM/FM symmetric
+    // around 0. RadioService keeps per-mode-family memory so switching USB →
+    // LSB flips the sign and USB → AM swaps to AM's remembered width.
+    // Default 150/2850 matches Thetis's stock SSB TX bandpass.
+    int TxFilterLowHz = 150,
+    int TxFilterHighHz = 2850);
 
 public sealed record RadioInfo(
     string MacAddress,
@@ -109,6 +122,11 @@ public sealed record VfoSetRequest(long Hz);
 public sealed record ModeSetRequest(RxMode Mode);
 
 public sealed record BandwidthSetRequest(int Low, int High);
+
+/// <summary>TX bandpass set request — signed Hz pair matching StateDto's
+/// TxFilterLowHz/TxFilterHighHz convention (LSB-style passbands are negative,
+/// DSB/AM/FM symmetric around 0).</summary>
+public sealed record TxFilterSetRequest(int LowHz, int HighHz);
 
 public sealed record SampleRateSetRequest(int Rate);
 

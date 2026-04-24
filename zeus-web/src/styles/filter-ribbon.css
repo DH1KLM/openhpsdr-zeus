@@ -1,0 +1,254 @@
+/* ===========================================================
+   Filter visualization PRD §3.2 — advanced filter ribbon.
+
+   Palette: NEUTRAL WARM GRAY (no blue, no cyan). Body is a
+   #26292f → #1e2025 gradient; preset panel is #2a2d33 with a
+   hairline border and 8px radius. Selected state brightens the
+   chip base and edges but stays in the gray family.
+
+   Layout lives as a dedicated row inside `.workspace` column 1
+   — above `.hero`, beside `.side-stack`. When
+   `.workspace.has-filter-ribbon` is not set (ribbon closed), the
+   row never exists.
+   =========================================================== */
+
+.workspace.has-filter-ribbon {
+  grid-template-rows: auto 1fr 200px;
+}
+.workspace.has-filter-ribbon .filter-ribbon { grid-column: 1; grid-row: 1; }
+.workspace.has-filter-ribbon .hero         { grid-row: 2; }
+.workspace.has-filter-ribbon .bottom-row   { grid-row: 3; }
+.workspace.has-filter-ribbon .side-stack   { grid-row: 1 / span 3; }
+
+.filter-ribbon {
+  position: relative;
+  color: #edeef1;
+  font-family: inherit;
+  min-height: 0;
+  border-radius: 10px;
+  padding: 10px 12px 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, #26292f 0%, #1e2025 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.filter-ribbon__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #7c8088;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+.filter-ribbon__close:hover { color: #edeef1; background: rgba(255, 255, 255, 0.04); }
+
+/* Two-column layout: wide left area (readouts + mini-pan + hint)
+   and a fixed-width preset panel on the right. */
+.filter-ribbon__body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  column-gap: 14px;
+  align-items: stretch;
+}
+
+/* Left column — vertical stack */
+.filter-ribbon__main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 6px;
+}
+
+.filter-ribbon__topRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  align-items: start;
+  column-gap: 8px;
+  padding: 2px 6px 6px;
+}
+.filter-ribbon__topCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.filter-ribbon__topCol--bw { align-items: flex-start; text-align: left; }
+.filter-ribbon__topCol--lo { align-items: center;    text-align: center; }
+.filter-ribbon__topCol--pb { align-items: center;    text-align: center; }
+.filter-ribbon__topCol--hi { align-items: flex-end;  text-align: right; }
+
+/* Uppercase, letter-spaced, muted neutral labels */
+.filter-ribbon__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #7c8088;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.filter-ribbon__topCol--bw .filter-ribbon__label { color: #b4b7bd; }
+
+.filter-ribbon__label--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  color: #b4b7bd;
+}
+.filter-ribbon__presets-icon { opacity: 0.75; font-size: 12px; }
+
+/* LOW CUT / HIGH CUT value */
+.filter-ribbon__freq {
+  font-size: 17px;
+  font-weight: 600;
+  color: #edeef1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+/* PASSBAND focal readout: bigger white number with small "kHz" suffix */
+.filter-ribbon__passband {
+  color: #edeef1;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.filter-ribbon__passband-value { font-size: 22px; font-weight: 600; letter-spacing: 0.02em; }
+.filter-ribbon__passband-unit  { font-size: 12px; color: #b4b7bd; font-weight: 500; }
+
+/* Mini-pan — fills the remaining vertical space in the main column */
+.filter-ribbon__minipan {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 80px;
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Footer hint — centered, tiny, muted, letter-spaced, uppercase */
+.filter-ribbon__hint {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: #7c8088;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+
+/* ===== Preset panel (right column) — its own framed card ===== */
+.filter-ribbon__presets {
+  background: #2a2d33;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-ribbon__preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+/* Beveled neutral-gray chip — sized to match the app's .btn.sm. */
+.filter-ribbon__chip {
+  appearance: none;
+  font-family: inherit;
+  padding: 5px 6px;
+  font-size: clamp(10px, 0.1vw + 9.5px, 12px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #e0e2e6;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(180deg, #3a3e45 0%, #2a2d33 100%);
+  border: 1px solid #4a4e55;
+  border-top-color: #585c63;
+  border-bottom-color: #32353b;
+  border-radius: 4px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 120ms ease, filter 120ms ease, color 120ms ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 1px 0 rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+.filter-ribbon__chip:hover {
+  filter: brightness(1.12);
+  border-color: #626670;
+}
+.filter-ribbon__chip.is-active {
+  color: #ffffff;
+  border-color: #8a8e97;
+  border-top-color: #a4a8b0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(0, 0, 0, 0.10) 100%),
+    linear-gradient(180deg, #52565e 0%, #3a3e45 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(220, 225, 232, 0.15),
+    0 0 10px rgba(200, 205, 212, 0.10),
+    0 1px 0 rgba(0, 0, 0, 0.40);
+}
+
+.filter-ribbon__custom {
+  appearance: none;
+  font-family: inherit;
+  padding: 6px 10px;
+  font-size: clamp(10px, 0.1vw + 9.5px, 12px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  border-radius: 4px;
+  color: #e0e2e6;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(180deg, #3a3e45 0%, #2a2d33 100%);
+  border: 1px solid #4a4e55;
+  border-top-color: #585c63;
+  border-bottom-color: #32353b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-transform: uppercase;
+  margin-top: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 1px 0 rgba(0, 0, 0, 0.35);
+}
+.filter-ribbon__custom:hover {
+  filter: brightness(1.12);
+  border-color: #626670;
+}
+.filter-ribbon__custom.is-active {
+  color: #ffffff;
+  border-color: #8a8e97;
+  border-top-color: #a4a8b0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(0, 0, 0, 0.10) 100%),
+    linear-gradient(180deg, #52565e 0%, #3a3e45 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(220, 225, 232, 0.15),
+    0 0 10px rgba(200, 205, 212, 0.10),
+    0 1px 0 rgba(0, 0, 0, 0.40);
+}
+.filter-ribbon__custom-icon { opacity: 0.75; margin-left: 8px; font-size: 12px; }

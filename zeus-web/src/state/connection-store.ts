@@ -59,6 +59,10 @@ export type ConnectionState = {
   mode: RxMode;
   filterLowHz: number;
   filterHighHz: number;
+  filterPresetName: string | null;
+  filterAdvancedPaneOpen: boolean;
+  txFilterLowHz: number;
+  txFilterHighHz: number;
   sampleRate: number;
   agcTopDb: number;
   attenDb: number;
@@ -96,6 +100,10 @@ export const useConnectionStore = create<ConnectionState>((set) => ({
   mode: 'USB',
   filterLowHz: 150,
   filterHighHz: 2850,
+  filterPresetName: 'VAR1',
+  filterAdvancedPaneOpen: false,
+  txFilterLowHz: 150,
+  txFilterHighHz: 2850,
   sampleRate: 192_000,
   agcTopDb: 80,
   attenDb: 0,
@@ -119,6 +127,10 @@ export const useConnectionStore = create<ConnectionState>((set) => ({
       mode: s.mode,
       filterLowHz: s.filterLowHz,
       filterHighHz: s.filterHighHz,
+      filterPresetName: s.filterPresetName,
+      filterAdvancedPaneOpen: s.filterAdvancedPaneOpen,
+      txFilterLowHz: s.txFilterLowHz,
+      txFilterHighHz: s.txFilterHighHz,
       sampleRate: s.sampleRate,
       agcTopDb: s.agcTopDb,
       attenDb: s.attenDb,
