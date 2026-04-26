@@ -206,7 +206,10 @@ export function ConnectPanel() {
       setError(null);
       try {
         if (isP2) {
-          await apiConnectP2({ endpoint: ep, sampleRate: 48_000 });
+          // P2 auto-discover defaults to 192 kHz (parity with P1) so the panadapter
+          // at zoom=1 shows ~192 kHz of spectrum — wide enough for any HF band.
+          // Operator can still pick another rate via the manual-connect dropdown.
+          await apiConnectP2({ endpoint: ep, sampleRate: DEFAULT_SAMPLE_RATE });
           const fresh = await fetchState();
           applyState(fresh);
           hydrateTxFromState(fresh);
@@ -238,7 +241,7 @@ export function ConnectPanel() {
       const port = override?.port ?? manualPort;
       const protocol: ProtocolChoice = override?.protocol ?? manualProtocol;
       const sampleRate: SampleRate = (override?.sampleRate as SampleRate | undefined)
-        ?? (protocol === 'P2' ? 48_000 : manualSampleRate);
+        ?? manualSampleRate;
       const label = override?.label;
 
       if (!IPV4_RE.test(ip)) {
@@ -255,7 +258,7 @@ export function ConnectPanel() {
       setManualError(null);
       try {
         if (protocol === 'P2') {
-          await apiConnectP2({ endpoint: ep, sampleRate: 48_000 });
+          await apiConnectP2({ endpoint: ep, sampleRate });
           const fresh = await fetchState();
           applyState(fresh);
           hydrateTxFromState(fresh);
