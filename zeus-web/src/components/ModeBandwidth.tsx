@@ -80,8 +80,8 @@ export function ModeBandwidth() {
 
   return (
     <>
-      {/* Desktop: horizontal row of mode buttons */}
-      <div className="ctrl-group hide-mobile">
+      {/* Desktop: horizontal row of mode buttons (>=1600 px viewport) */}
+      <div className="ctrl-group hide-narrow">
         <div className="label-xs ctrl-lbl">MODE</div>
         <div className="btn-row wrap" style={{ width: 236 }}>
           {MODES.map((m) => (
@@ -97,8 +97,8 @@ export function ModeBandwidth() {
         </div>
       </div>
 
-      {/* Mobile: dropdown for mode selection */}
-      <div className="ctrl-group show-mobile" style={{ display: 'none' }}>
+      {/* Narrow desktop / mobile: dropdown (<1600 px viewport) */}
+      <div className="ctrl-group show-narrow">
         <div className="label-xs ctrl-lbl">MODE</div>
         <select
           value={mode}

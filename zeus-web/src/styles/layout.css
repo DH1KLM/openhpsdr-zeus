@@ -1069,6 +1069,20 @@
    slot that takes the bottom-row space normally occupied by the logbook. */
 .show-mobile { display: none; }
 
+/* .show-narrow / .hide-narrow — narrow-but-not-mobile swap, sitting between
+   the desktop layout and the full-mobile collapse. Used by ModeBandwidth and
+   BandButtons to switch their button rows to dropdowns before the row gets
+   squashed in a tight control-strip (issue #137). The 1600 px cutoff is
+   wider than .hide-mobile (900 px) on purpose so a narrow desktop window
+   gets the dropdown without triggering the full mobile chrome collapse, and
+   wider than the point where BandButtons (auto-width, max 480 px) starts
+   getting squeezed by the parent flex. */
+.show-narrow { display: none; }
+@media (max-width: 1600px) {
+  .hide-narrow { display: none !important; }
+  .show-narrow { display: flex; }
+}
+
 /* ===== Mobile PTT button — desktop styles are unused (slot is hidden) but
    kept here for consistency with the rest of the design system. ===== */
 .mobile-ptt-slot { flex: 1; }
