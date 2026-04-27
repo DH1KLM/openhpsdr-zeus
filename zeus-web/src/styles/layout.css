@@ -567,6 +567,7 @@
   border: 1px solid #000;
   border-radius: var(--r-md);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.7);
+  overflow: hidden;
 }
 .freq-top, .freq-bot { display: flex; align-items: center; font-size: 10px; }
 .freq-digits {
@@ -574,7 +575,7 @@
   align-items: baseline;
   font-family: var(--font-num);
   font-weight: 700;
-  font-size: 38px;
+  font-size: 28px;
   letter-spacing: 0.01em;
   color: var(--fg-0);
   font-variant-numeric: tabular-nums;
@@ -582,6 +583,7 @@
   margin: 4px 0;
   justify-content: center;
   text-shadow: 0 0 10px var(--accent-soft);
+  max-width: 100%;
 }
 .freq-digits .digit {
   background: none; border: none; color: inherit; font: inherit;
