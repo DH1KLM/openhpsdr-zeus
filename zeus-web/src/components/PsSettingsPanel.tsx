@@ -54,7 +54,8 @@ const CAL_STATE_NAMES = [
 
 /**
  * PureSignal + Two-tone control surface. Lives inside the Settings modal
- * (SettingsMenu) and as a standalone dockable panel (PsFlexPanel).
+ * (SettingsMenu); the at-a-glance live monitor is the separate
+ * PsAnimationPanel, which docks into the flex layout.
  *
  * Uses the same neutral fg/accent tokens as the other settings tabs;
  * amber is reserved for the panadapter trace per CLAUDE.md.

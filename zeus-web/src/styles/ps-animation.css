@@ -1,0 +1,268 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * PureSignal animation panel — supplemental styles only. The panel
+ * itself reuses Zeus's standard chrome (.panel / .panel-head /
+ * .panel-body / .btn / .chip / .dot). Anything below is for surfaces
+ * that don't have a generic equivalent: the SVG signal-flow diagram,
+ * the SVG mini-spectrum, the metric tiles, and the popover wrapper.
+ *
+ * The amber #FFA028 trace is the only non-token colour and is reserved
+ * for panadapter signal-strength visualisation per CLAUDE.md.
+ */
+
+/* ---- Outer panel layout ---- */
+.psanim-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 360px;
+}
+.psanim-root .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  overflow: auto;
+}
+
+/* Header LED stays inline with chip styling. .dot.locked tracks the
+   green LED used elsewhere for "on" state but with a tighter ring. */
+.psanim-locked-chip {
+  letter-spacing: 0.16em;
+}
+.psanim-locked-chip .v { color: var(--fg-2); }
+.psanim-locked-chip.is-locked .v { color: #8effa0; }
+
+.psanim-mode-row {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* ---- Sub-panel head: smaller than the outer panel ---- */
+.psanim-sub .panel-head {
+  min-height: 22px;
+  padding: 3px 8px;
+}
+.psanim-sub .panel-head .title {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+.psanim-sub .panel-head .hint {
+  font-size: 9px;
+  color: var(--fg-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+.psanim-sub .panel-body {
+  padding: 8px 10px;
+  background: var(--bg-1);
+}
+
+/* ---- Signal flow SVG ---- */
+.psanim-flow {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.psanim-flow text {
+  font-family: var(--font-sans);
+  fill: var(--fg-1);
+}
+.psanim-flow .psanim-flow-title {
+  fill: var(--fg-0);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.psanim-flow .psanim-flow-sub { fill: var(--fg-2); }
+.psanim-flow .psanim-flow-node-bg {
+  fill: var(--bg-0);
+}
+.psanim-flow .psanim-flow-node-border {
+  stroke: var(--panel-border);
+  stroke-width: 1;
+  fill: none;
+}
+.psanim-flow .psanim-flow-node--active .psanim-flow-node-bg {
+  fill: var(--btn-active-bot);
+}
+.psanim-flow .psanim-flow-node--active .psanim-flow-node-border {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 3px var(--accent-soft));
+}
+.psanim-flow .psanim-flow-node--active .psanim-flow-title {
+  fill: var(--accent);
+}
+.psanim-flow .psanim-flow-link {
+  stroke: var(--fg-3);
+  stroke-width: 1;
+  fill: none;
+}
+.psanim-flow .psanim-flow-link--active {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 2px var(--accent-soft));
+}
+.psanim-flow .psanim-flow-link--dashed { stroke-dasharray: 3 3; }
+.psanim-flow .psanim-flow-dot { fill: var(--fg-3); }
+.psanim-flow .psanim-flow-dot--active { fill: var(--accent); }
+
+/* ---- Mini panadapter ---- */
+.psanim-pana {
+  position: relative;
+  background: var(--spec-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  height: 200px;
+  overflow: hidden;
+}
+.psanim-pana__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.psanim-pana__grid line { stroke: var(--spec-grid); stroke-width: 1; }
+.psanim-pana__axis text {
+  fill: var(--fg-3);
+  font-size: 9px;
+  font-family: var(--font-mono);
+}
+.psanim-pana__ref {
+  stroke: rgba(242, 133, 36, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  fill: none;
+}
+.psanim-pana__trace {
+  stroke: #FFA028;
+  stroke-width: 1.5;
+  fill: none;
+}
+.psanim-pana__fill {
+  fill: rgba(255, 160, 40, 0.18);
+  stroke: none;
+}
+
+/* ---- Metric tiles ----
+   Same dark inset chrome as .chip but stacked (label above value) and
+   sized for the four-up footer row. Uses tokens; no bespoke palette. */
+.psanim-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.psanim-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--r-xs);
+}
+.psanim-metric .k {
+  color: var(--fg-2);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 9px;
+}
+.psanim-metric .v {
+  color: var(--fg-0);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.psanim-metric.accent .v { color: var(--accent); }
+.psanim-metric.empty .v { color: var(--fg-3); }
+
+.psanim-foot {
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 2px 0 0;
+}
+
+/* ---- PS-toggle split-button: PS | ^ ---- */
+.ps-toggle-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+.ps-toggle-group > .btn {
+  border-radius: 0;
+}
+.ps-toggle-group > .btn:first-child {
+  border-top-left-radius: var(--r-sm);
+  border-bottom-left-radius: var(--r-sm);
+  border-right: 1px solid rgba(0, 0, 0, 0.4);
+}
+.ps-toggle-group > .btn:last-child {
+  border-top-right-radius: var(--r-sm);
+  border-bottom-right-radius: var(--r-sm);
+  min-width: 0;
+  padding: 0.5em 0.55em;
+  font-size: 12px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+/* Blue / accent active state for tx-btn (parallels .btn.tx red).
+   Matches the hardware's blue chrome — same gradient as .btn.active. */
+.btn.tx-btn.accent.is-on {
+  --btn-top-c: var(--btn-active-top);
+  --btn-bot-c: var(--btn-active-bot);
+  color: var(--btn-active-text);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 1px 0 var(--btn-hl),
+    0 0 8px var(--accent-soft);
+}
+.led.accent { background: #1a2436; }
+.led.accent.on {
+  background: radial-gradient(circle at 30% 30%, #b9d8ff, #3b78c2);
+  box-shadow: 0 0 6px rgba(74, 158, 255, 0.7);
+}
+
+/* ---- Popover (centred modal) ---- */
+.psanim-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.psanim-popover {
+  position: relative;
+  width: min(640px, calc(100vw - 48px));
+  max-height: calc(100vh - 96px);
+  display: flex;
+  overflow: hidden;
+}
+.psanim-popover .panel { flex: 1; min-height: 0; max-height: inherit; }
+.psanim-popover .panel-body { max-height: calc(100vh - 140px); }
+.psanim-popover__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border);
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 1;
+}
+.psanim-popover__close:hover { filter: brightness(1.2); }

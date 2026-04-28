@@ -53,7 +53,7 @@ import { CwPanel } from './panels/CwPanel';
 import { LogbookPanel } from './panels/LogbookPanel';
 import { TxMetersPanel } from './panels/TxMetersPanel';
 import { FilterRibbonPanel } from './panels/FilterRibbonPanel';
-import { PsFlexPanel } from './panels/PsFlexPanel';
+import { PsAnimationFlexPanel } from './panels/PsAnimationFlexPanel';
 import { BandPanel } from './panels/BandPanel';
 import { ModePanel } from './panels/ModePanel';
 import { StepPanel } from './panels/StepPanel';
@@ -144,10 +144,10 @@ export const PANELS: Record<string, PanelDef> = {
   },
   ps: {
     id: 'ps',
-    name: 'PureSignal',
+    name: 'PureSignal Monitor',
     category: 'tools',
-    tags: ['puresignal', 'ps', 'tx', 'predistortion', 'linearization', 'twotone'],
-    component: PsFlexPanel,
+    tags: ['puresignal', 'ps', 'tx', 'predistortion', 'linearization', 'dpd', 'monitor'],
+    component: PsAnimationFlexPanel,
   },
   band: {
     id: 'band',

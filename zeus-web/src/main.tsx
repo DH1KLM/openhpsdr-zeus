@@ -50,6 +50,7 @@ import './styles/layout.css';
 import './styles/filter-ribbon.css';
 import './styles/toolbar-favorites.css';
 import './styles/nr-settings.css';
+import './styles/ps-animation.css';
 import App from './App.tsx';
 
 const rootEl = document.getElementById('root');
