@@ -150,6 +150,12 @@ export function ConnectPanel() {
 
   const [radios, setRadios] = useState<RadioInfoDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Separate from the discovery-polling error: failures from the operator
+  // clicking Connect on a discovered radio bypass the failureCount threshold
+  // (issue #213 — without this, a 409/500 from /api/connect/p2 was hidden
+  // until two failures, so the operator saw the button "do nothing" while
+  // the real "UDP port 1025 in use" message stayed buried server-side).
+  const [connectError, setConnectError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [failureCount, setFailureCount] = useState(0);
   const inflightRef = useRef(false);
@@ -226,6 +232,7 @@ export function ConnectPanel() {
       const isP2 = (r.details?.protocol ?? 'P1') === 'P2';
       setInflight(true);
       setError(null);
+      setConnectError(null);
       try {
         if (isP2) {
           await apiConnectP2({ endpoint: ep, sampleRate: DEFAULT_SAMPLE_RATE });
@@ -245,7 +252,9 @@ export function ConnectPanel() {
         setLastConnectedEndpoint(ep || null);
         applyPostConnectEffects();
       } catch (err) {
-        setError(errorMessage(err));
+        // Surface this directly — discovery polling's RETRY_THRESHOLD does
+        // not apply to operator-driven connect attempts. Issue #213.
+        setConnectError(errorMessage(err));
       } finally {
         setInflight(false);
       }
@@ -345,6 +354,7 @@ export function ConnectPanel() {
 
   const handleRetry = useCallback(() => {
     setError(null);
+    setConnectError(null);
     setFailureCount(0);
     setRetryNonce((n) => n + 1);
   }, []);
@@ -367,6 +377,9 @@ export function ConnectPanel() {
   }, [savedEndpoints]);
 
   const showError = error !== null && failureCount >= RETRY_THRESHOLD;
+  // Connect-attempt failures are not gated by RETRY_THRESHOLD — one click,
+  // one error message. Issue #213.
+  const showConnectError = connectError !== null;
 
   if (status === 'Connected') {
     return (
@@ -554,6 +567,32 @@ export function ConnectPanel() {
                 <span>{error}</span>
                 <button type="button" onClick={handleRetry} className="btn sm">
                   Retry
+                </button>
+              </div>
+            )}
+            {showConnectError && (
+              <div
+                className="mono"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 10px',
+                  background: 'rgba(230,58,43,0.12)',
+                  border: '1px solid rgba(230,58,43,0.35)',
+                  borderRadius: 4,
+                  color: 'var(--tx)',
+                  fontSize: 11,
+                  gap: 8,
+                }}
+              >
+                <span style={{ flex: 1 }}>{connectError}</span>
+                <button
+                  type="button"
+                  onClick={() => setConnectError(null)}
+                  className="btn sm"
+                >
+                  Dismiss
                 </button>
               </div>
             )}

@@ -191,7 +191,34 @@ public sealed class Protocol2Client : IDisposable, IAsyncDisposable
         var sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         // Matched port convention — PC binds 1025, radio sends back with source
         // ports 1025/1026/1027/1035.. which we demux by fromaddr.
-        sock.Bind(new IPEndPoint(IPAddress.Any, 1025));
+        try
+        {
+            sock.Bind(new IPEndPoint(IPAddress.Any, 1025));
+        }
+        catch (SocketException ex) when (ex.SocketErrorCode is SocketError.AddressAlreadyInUse)
+        {
+            // Common on radios that ship an embedded host (e.g. ANAN G2 with
+            // internal Radxa CM5) where the stock client / piHPSDR instance is
+            // still bound to UDP/1025. Issue #213. Dispose the local socket
+            // before surfacing — the field is still null at this point so a
+            // retry creates a fresh one.
+            sock.Dispose();
+            _log.LogWarning(
+                "p2.connect bind failed — UDP port 1025 already in use (another HPSDR client running?)");
+            throw new InvalidOperationException(
+                "UDP port 1025 is already in use on this machine. " +
+                "Close any other HPSDR client (piHPSDR, Thetis, the radio's stock app) and try again.",
+                ex);
+        }
+        catch (SocketException ex)
+        {
+            sock.Dispose();
+            _log.LogWarning(ex, "p2.connect bind failed errCode={Code}", ex.SocketErrorCode);
+            throw new InvalidOperationException(
+                $"Failed to bind UDP port 1025 ({ex.SocketErrorCode}: {ex.Message}). " +
+                "Check that no other HPSDR client is running and that the firewall permits UDP 1025.",
+                ex);
+        }
         sock.ReceiveBufferSize = 1 << 20;
         _sock = sock;
         _log.LogInformation("p2.connect radio={Radio} localPort=1025", radioEndpoint.Address);
