@@ -234,31 +234,50 @@ internal static class ControlFrame
     private static void WriteAttenuatorPayload(Span<byte> c14, in CcState s)
     {
         // Bare HPSDR (Hermes/Angelia/Orion/MkII): C4 = 0x20 | (Db & 0x1F).
-        // HL2: C4 = 0x40 | (60 - Db) — HL2 has no physical RX step attenuator,
-        // so the UI "attenuate by N dB" maps to "reduce firmware RX gain by N
-        // from its max of 60" (HL2 gateware ad9866 rxgain register).
+        // HL2: C4 = 0x40 | <step-attn> — HL2 has no physical RX step
+        // attenuator, so the UI "attenuate by N dB" maps to "reduce
+        // firmware RX gain by N from its max of 60" (HL2 gateware ad9866
+        // rxgain register) when !MOX. During MOX the SAME C4 byte is
+        // re-read by HL2 firmware as the AD9866 TX PGA `tx_step_attn`,
+        // per docs/references/protocol-1/hermes-lite2-protocol.md:381-384
+        // (mi0bot networkproto1.c:1102):
+        //   if (XmitBit) C4 = (tx_step_attn & 0x3F) | 0x40;
+        //   else         C4 = (rx_step_attn & 0x3F) | 0x40;
+        // tx_step_attn defaults to 31 (mi0bot console.cs:19610
+        // `SetTxAttenData(31 - txatt)` with txatt=0). The valid wire range
+        // is 0..59 per mi0bot's `udTXStepAttData` Min=-28, Max=+31 mapped
+        // through `31 - txatt`; clamp accordingly. Pre-PS the HL2 firmware
+        // interpreted Zeus's `60 - db = 0x7C` permissively, but with
+        // puresignal_run=1 the firmware reads C4 strictly and an
+        // out-of-range tx_step_attn=60 mutes the AD9866 TX PGA — see
+        // docs/puresignal.hl2.md §M1 for the post-mortem.
         int db = s.Atten.ClampedDb;
-        byte c4 = s.Board == HpsdrBoardKind.HermesLite2
-            ? (byte)(0x40 | Math.Clamp(60 - db, 0, 60))
-            : (byte)(0x20 | (db & 0x1F));
-
-        // HL2 PS auto-attenuate: during MOX with PS enabled, mi0bot
-        // networkproto1.c:1086-1088 swaps the C4 source from rx_step_attn to
-        // tx_step_attn so the AD9866 TX-side PGA presents the operator's
-        // ATTOnTX value (the feedback path PGA register, NOT a separate RX
-        // attenuator). C# UI value (-28..+31 dB) → wire byte (31 - db),
-        // matching mi0bot console.cs:10947-10948
-        // `NetworkIO.SetTxAttenData(31 - _tx_attenuator_data)`. Bit 6 stays
-        // set (0x40, PGA select); the low 6 bits carry the wire byte clamped
-        // to the same 0..60 RX-side range so a stale operator value can't
-        // overflow the field. Sentinel int.MinValue keeps the default RX-
-        // side encoding above untouched — first PS arm matches today's
-        // behaviour exactly.
-        if (s.Board == HpsdrBoardKind.HermesLite2
-            && s.Mox
-            && s.Hl2TxAttnDb != int.MinValue)
+        byte c4;
+        if (s.Board == HpsdrBoardKind.HermesLite2)
         {
-            c4 = (byte)(Math.Clamp(31 - s.Hl2TxAttnDb, 0, 60) | 0x40);
+            // Side-aware clamp: tx_step_attn valid range is 0..59 (mi0bot
+            // udTXStepAttData Min=-28, Max=+31 mapped via 31 - txatt);
+            // rx_step_attn valid range is 0..60 (mi0bot's mask is 0x3F and
+            // its default value is 60 = max RX gain). Using a single 0..59
+            // clamp would silently truncate the no-attenuation RX setting
+            // by 1 dB.
+            int rawAttn;
+            int maxAttn;
+            if (s.Mox)
+            {
+                rawAttn = s.Hl2TxAttnDb != int.MinValue ? 31 - s.Hl2TxAttnDb : 31;
+                maxAttn = 59;
+            }
+            else
+            {
+                rawAttn = 60 - db;
+                maxAttn = 60;
+            }
+            c4 = (byte)(0x40 | Math.Clamp(rawAttn, 0, maxAttn));
+        }
+        else
+        {
+            c4 = (byte)(0x20 | (db & 0x1F));
         }
 
         c14[0] = 0;   // C1 — reserved on this register
