@@ -45,6 +45,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { WorkspaceContext } from './layout/WorkspaceContext';
 import { FlexWorkspace } from './layout/FlexWorkspace';
+import { LayoutBar } from './components/LayoutBar';
+import { StatusBar } from './components/StatusBar';
 import { AgcSlider } from './components/AgcSlider';
 import { AfGainSlider } from './components/AfGainSlider';
 import { AlertBanner } from './components/AlertBanner';
@@ -97,7 +99,6 @@ import { useQrzStore } from './state/qrz-store';
 import { useRotatorStore } from './state/rotator-store';
 import { useLoggerStore } from './state/logger-store';
 import { useTxStore } from './state/tx-store';
-import { useLayoutPreferenceStore } from './state/layout-preference-store';
 import { useLayoutStore } from './state/layout-store';
 import { useDisplaySettingsStore } from './state/display-settings-store';
 import { useCapabilitiesStore } from './state/capabilities-store';
