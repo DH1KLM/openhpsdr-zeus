@@ -4,7 +4,8 @@
 
 .app {
   display: grid;
-  grid-template-rows: 54px 68px auto 1fr 44px;
+  grid-template-columns: 60px 1fr;
+  grid-template-rows: 40px auto 1fr 36px 44px;
   height: 100vh;
   width: 100vw;
   background: var(--bg-0);
@@ -13,8 +14,10 @@
   gap: 6px;
 }
 
-/* ===== Top bar — beveled gradient strip with embedded pills ===== */
+/* ===== Top bar — simplified version with just connect/settings ===== */
 .topbar {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -23,7 +26,7 @@
   border: 1px solid var(--panel-edge);
   border-radius: var(--r-lg);
   box-shadow: var(--panel-shadow);
-  height: 54px;
+  height: 40px;
 }
 .brand {
   display: flex;
@@ -109,8 +112,16 @@
   50% { box-shadow: inset 0 1px 0 var(--btn-hl), 0 0 0 6px rgba(255,120,20,0); }
 }
 
+/* ===== Layout Bar (left side) ===== */
+.app > .layout-bar {
+  grid-column: 1;
+  grid-row: 1 / -1;
+}
+
 /* ===== Control strip ===== */
 .control-strip {
+  grid-column: 2;
+  grid-row: 2;
   display: flex;
   gap: 12px;
   padding: 4px 10px;
@@ -386,6 +397,8 @@
 
 /* ===== Workspace ===== */
 .workspace {
+  grid-column: 2;
+  grid-row: 3;
   display: grid;
   grid-template-columns: 1fr 320px;
   /* Bottom track sizes to its content (pinned tier + optional chip tier),
@@ -1025,6 +1038,8 @@
 
 /* ===== Transport bar ===== */
 .transport {
+  grid-column: 2;
+  grid-row: 5;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1338,4 +1353,207 @@
   .btn     { min-height: 36px; }
   .btn.lg  { min-height: 44px; }
   .btn-row { gap: 6px; }
+}
+
+/* ===== Layout Bar (left-side vertical bar for layout switching) ===== */
+.layout-bar {
+  display: flex;
+  flex-direction: column;
+  width: 60px;
+  background: linear-gradient(180deg, var(--panel-top), var(--panel-bot));
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
+}
+
+.layout-bar-header {
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--panel-edge);
+  background: rgba(0,0,0,0.2);
+}
+
+.layout-bar-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--fg-2);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  display: block;
+  text-align: center;
+}
+
+.layout-bar-items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.layout-bar-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.layout-bar-items::-webkit-scrollbar-thumb {
+  background: rgba(74,158,255,0.3);
+  border-radius: 2px;
+}
+
+.layout-bar-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.layout-bar-item-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bot));
+  border: 1px solid var(--btn-edge);
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 1px 0 var(--btn-hl), inset 0 -1px 0 rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: filter var(--dur-fast), border-color var(--dur-fast);
+  color: var(--fg-1);
+}
+
+.layout-bar-item-btn:hover {
+  filter: brightness(1.15);
+}
+
+.layout-bar-item.active .layout-bar-item-btn {
+  border-color: var(--accent);
+  box-shadow: inset 0 1px 0 var(--btn-hl), 0 0 6px var(--accent-soft);
+}
+
+.layout-bar-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.4;
+  flex-shrink: 0;
+}
+
+.layout-bar-item.active .layout-bar-icon {
+  stroke: var(--accent);
+}
+
+.layout-bar-item-name {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  color: var(--fg-1);
+}
+
+.layout-bar-item.active .layout-bar-item-name {
+  color: var(--accent);
+}
+
+.layout-bar-item-actions {
+  display: none;
+  gap: 2px;
+  width: 100%;
+}
+
+.layout-bar-item:hover .layout-bar-item-actions {
+  display: flex;
+}
+
+.layout-bar-action-btn {
+  flex: 1;
+  padding: 2px;
+  font-size: 10px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--btn-edge);
+  border-radius: var(--r-xs);
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.layout-bar-action-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--btn-text);
+}
+
+.layout-bar-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.layout-bar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-top: 1px solid var(--panel-edge);
+  background: rgba(0,0,0,0.2);
+}
+
+.layout-bar-footer .btn.sm {
+  font-size: 9px;
+  padding: 0.4em;
+}
+
+/* Modal overlay for add/rename dialogs */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-content {
+  background: var(--bg-1);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--r-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  padding: 20px;
+  min-width: 320px;
+  max-width: 90vw;
+  color: var(--fg-0);
+}
+
+/* ===== Status Bar (bottom bar with info chips) ===== */
+.status-bar {
+  grid-column: 2;
+  grid-row: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px;
+  background: linear-gradient(180deg, var(--panel-top), var(--panel-bot));
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--panel-shadow);
+  height: 36px;
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
